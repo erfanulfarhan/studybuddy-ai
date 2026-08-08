@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StudyBuddy — AI study companion</title>
+<meta name="description" content="Paste your notes or drop a PDF — get an instant summary, ask questions, and test yourself with an AI-generated quiz.">
+<style>
+  :root{
+    --bg:#f6f7fb; --card:#ffffff; --ink:#1e2233; --muted:#6b7280; --line:#e7e9f0;
+    --accent:#6366f1; --accent2:#8b5cf6; --accent-ink:#fff;
+    --ok:#16a34a; --okbg:#e7f6ec; --err:#dc2626; --errbg:#fdecec;
+    --shadow:0 10px 30px rgba(30,34,51,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme=light]){
+      --bg:#0d1017; --card:#151a24; --ink:#e8eaf0; --muted:#98a1b3; --line:#252c3a;
+      --okbg:#12291a; --errbg:#2a1414; --shadow:0 10px 40px rgba(0,0,0,.5);
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg);color:var(--ink)}
+  .wrap{max-width:860px;margin:0 auto;padding:2rem 1.1rem 4rem}
+  header{text-align:center;margin-bottom:1.8rem}
+  .logo{font-size:1.9rem;font-weight:800;letter-spacing:-.02em;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;
+    background-clip:text;color:transparent}
+  .tag{color:var(--muted);margin-top:.3rem}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:1.4rem;box-shadow:var(--shadow);margin-bottom:1.2rem}
+  textarea{width:100%;min-height:170px;resize:vertical;padding:.9rem 1rem;font:inherit;
+    color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:12px;outline:none}
+  textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+  .drop{margin-top:.7rem;border:1.5px dashed var(--line);border-radius:12px;padding:.8rem;
+    text-align:center;color:var(--muted);font-size:.9rem;cursor:pointer;transition:.15s}
+  .drop.over{border-color:var(--accent);color:var(--accent);background:rgba(99,102,241,.05)}
+  .row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-top:.9rem}
+  .meta{color:var(--muted);font-size:.82rem;margin-left:auto}
+  button{font:inherit;font-weight:650;border:0;border-radius:11px;padding:.7rem 1.1rem;cursor:pointer}
+  .btn{background:linear-gradient(180deg,var(--accent),var(--accent2));color:var(--accent-ink)}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  button:disabled{opacity:.55;cursor:default}
+  .ask{display:flex;gap:.6rem;margin-top:.6rem}
+  .ask input{flex:1;padding:.7rem .9rem;font:inherit;color:var(--ink);background:transparent;
+    border:1px solid var(--line);border-radius:11px;outline:none}
+  .ask input:focus{border-color:var(--accent)}
+  #out{min-height:40px}
+  .placeholder{color:var(--muted);text-align:center;padding:2rem 1rem}
+  .spin{display:inline-block;width:18px;height:18px;border:3px solid var(--line);
+    border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;vertical-align:-4px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .msg{padding:.8rem 1rem;border-radius:11px}
+  .msg.err{background:var(--errbg);color:var(--err)}
+  .prose h1,.prose h2,.prose h3{margin:1rem 0 .4rem;font-size:1.05rem}
+  .prose ul{margin:.3rem 0 .3rem 1.1rem;padding:0}
+  .prose li{margin:.2rem 0}
+  .prose strong{color:var(--accent)}
+  /* quiz */
+  .q{border:1px solid var(--line);border-radius:14px;padding:1rem;margin-bottom:.9rem}
+  .q .qt{font-weight:650;margin-bottom:.6rem}
+  .opt{display:block;width:100%;text-align:left;background:transparent;color:var(--ink);
+    border:1px solid var(--line);border-radius:10px;padding:.6rem .8rem;margin:.35rem 0;font-weight:500}
+  .opt:hover:not(:disabled){border-color:var(--accent)}
+  .opt.correct{background:var(--okbg);border-color:var(--ok);color:var(--ok);font-weight:650}
+  .opt.wrong{background:var(--errbg);border-color:var(--err);color:var(--err)}
+  .expl{font-size:.88rem;color:var(--muted);margin-top:.5rem;padding-left:.2rem}
+  .score{text-align:center;font-size:1.2rem;font-weight:750;margin:.5rem 0 1rem}
+  footer{text-align:center;color:var(--muted);font-size:.85rem;margin-top:1.5rem}
+  footer a{color:var(--accent);text-decoration:none}
+  .tabs{display:flex;gap:.4rem;justify-content:center;margin-bottom:1rem;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">🎓 StudyBuddy</div>
+    <div class="tag">Paste your notes or drop a PDF — summarise, ask, and quiz yourself with AI.</div>
+  </header>
+
+  <div class="card">
+    <textarea id="notes" placeholder="Paste your lecture notes, an article, a chapter… (or drop a PDF below)"></textarea>
+    <div class="drop" id="drop">📄 Drop a PDF here, or click to choose one
+      <input type="file" id="file" accept="application/pdf" hidden>
+    </div>
+    <div class="ask">
+      <input id="question" placeholder="Ask a question about your notes…">
+      <button class="btn ghost" id="askBtn">Ask</button>
+    </div>
+    <div class="row">
+      <button class="btn" id="sumBtn">✨ Summarise</button>
+      <button class="btn" id="quizBtn">📝 Quiz me</button>
+      <span class="meta" id="count">0 characters</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div id="out"><div class="placeholder">Your summary, answers and quiz will appear here.</div></div>
+  </div>
+
+  <footer>
+    Built by <b>Erfanul Farhan</b> · powered by Gemini ·
+    <a href="https://github.com/erfanulfarhan" target="_blank" rel="noopener">GitHub</a>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs" type="module"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -23,7 +23,7 @@ const server = http.createServer(async (req, res) => {
   }
   const file = req.url === "/" ? "index.html" : req.url.slice(1).split("?")[0];
   try {
-    const buf = await readFile(path.join(ROOT, file));
+    const buf = await readFile(path.join(ROOT, "public", file));
     res.setHeader("content-type", TYPES[path.extname(file)] || "application/octet-stream");
     res.end(buf);
   } catch {

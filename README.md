@@ -4,7 +4,7 @@ Paste your notes or drop a PDF, and StudyBuddy will **summarise** them into clea
 revision notes, **answer questions** about them, and generate an **interactive
 quiz** to test yourself — all powered by Google Gemini.
 
-**Live demo:** _deploy to Vercel in ~2 minutes (below) and drop the link here._
+**Live demo: https://studybuddy-ai-pi.vercel.app**
 
 ![StudyBuddy](docs/screenshot.png)
 
